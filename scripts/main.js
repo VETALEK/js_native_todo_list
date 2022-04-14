@@ -3,7 +3,6 @@
 function updateItemsLeft() {
   const total = todoList.querySelectorAll('li').length;
   const done = todoList.querySelectorAll('.completed').length;
-  // console.log('updated', total, done);
 
   itemsLeftCounter.textContent = total - done;
 }
@@ -73,7 +72,6 @@ function lookIfAllChecked() {
 
 function lookIfAnyCompleted() {
   buttonClearCompleted.hidden = todoList.querySelectorAll('.completed').length <= 0;
-  console.log(todoList.querySelectorAll('.completed').length <= 0);
 }
 
 function showAllTodos() {
@@ -112,18 +110,18 @@ function markSelectedFilter(event) {
 function applyCurrentFilter() {
   const filterMode = filtersList.querySelector('.selected');
 
-  switch (true) {
-    case filterMode.matches('.show-all'): {
+  switch (filterMode.dataset.filter) {
+    case 'all': {
       showAllTodos();
       break;
     }
 
-    case filterMode.matches('.show-active'): {
+    case 'active': {
       showActiveTodos();
       break;
     }
 
-    case filterMode.matches('.show-completed'): {
+    case 'completed': {
       showCompletedTodos();
       break;
     }
@@ -148,6 +146,7 @@ root.addEventListener('keypress', applyCurrentFilter);
 root.addEventListener('click', updateItemsLeft);
 root.addEventListener('keypress', updateItemsLeft);
 root.addEventListener('click', lookIfAllChecked);
+root.addEventListener('keypress', lookIfAllChecked);
 root.addEventListener('click', lookIfAnyCompleted);
 
 todoInput.addEventListener('keypress', addTodo);

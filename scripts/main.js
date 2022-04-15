@@ -68,7 +68,12 @@ function toggleAllTodos() {
 }
 
 function updateTotalToggler() {
-  totalToggler.checked = ![...todoList.querySelectorAll('.todo-item')]
+  const todos = todoList.querySelectorAll('.todo-item');
+  const totalTogglerLabel = root.querySelector('.toggle-all-label');
+
+  totalTogglerLabel.hidden = todos.length <= 0;
+
+  totalToggler.checked = ![...todos]
     .every(todo => !todo.matches('.completed'));
 }
 

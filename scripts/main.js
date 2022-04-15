@@ -14,7 +14,7 @@ function updateItemsLeft() {
 }
 
 function addTodo() {
-  const todoContent = todoInput.value;
+  const todoContent = todoInput.value.trim();
   
   if (todoContent.length <= 0) {
     return;

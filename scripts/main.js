@@ -20,7 +20,7 @@ function addTodo() {
     return;
   }
 
-  const todoId = todoList.childElementCount + 1;
+  const todoId = Number(new Date()) % 100000;
   const newTodo = `
     <li class="todo-item">
       <input type="checkbox" id="todo-${todoId}" class="toggle">
@@ -73,11 +73,11 @@ function updateTotalToggler() {
 
   totalTogglerLabel.hidden = todos.length <= 0;
 
-  totalToggler.checked = ![...todos]
-    .every(todo => !todo.matches('.completed'));
+  totalToggler.checked = [...todos]
+    .every(todo => todo.matches('.completed'));
 }
 
-function lookIfAnyCompleted() {
+function updateClearCompleted() {
   buttonClearCompleted.hidden = todoList.querySelectorAll('.completed').length <= 0;
 }
 
@@ -174,7 +174,7 @@ root.addEventListener('keypress', (event) => {
   }
 });
 
-root.addEventListener('click', lookIfAnyCompleted);
+root.addEventListener('click', updateClearCompleted);
 
 root.addEventListener('click', updateFooter);
 root.addEventListener('keypress', (event) => {

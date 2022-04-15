@@ -13,21 +13,45 @@ function updateItemsLeft() {
   itemsLeftCounter.textContent = total - done;
 }
 
-function addTodo() {
-  const todoContent = todoInput.value.trim();
-  
-  if (todoContent.length <= 0) {
-    return;
-  }
-
-  const todoId = Number(new Date()) % 100000;
-  const newTodo = `
-    <li class="todo-item">
-      <input type="checkbox" id="todo-${todoId}" class="toggle">
-      <label for="todo-${todoId}">${todoContent}</label>
+function makeTodoFromObj(obj) {
+  return `
+    <li class="todo-item ${obj.isCompleted ? 'completed' : ''}">
+      <input
+        type="checkbox"
+        id="todo-${obj.id}"
+        class="toggle"
+        ${obj.isCompleted ? 'checked' : ''}
+      >
+      <label for="todo-${obj.id}">${obj.name}</label>
       <button class="destroy"></button>
     </li>
   `;
+}
+
+function setTodoListFrom(objList) {
+  for (const todoObj of objList) {
+    const newTodo = makeTodoFromObj(todoObj);
+
+    todoList.insertAdjacentHTML('beforeend', newTodo);
+  }
+
+  updateTotalToggler();
+  updateClearCompleted();
+  updateItemsLeft();
+  updateFooter();
+}
+
+function addInputedTodo() {
+  const inputText = todoInput.value.trim();
+  
+  if (inputText.length <= 0) {
+    return;
+  }
+
+  const newTodo = makeTodoFromObj({
+    id: Number(new Date()) % 100_000,
+    name: inputText,
+  });
 
   todoList.insertAdjacentHTML('beforeend', newTodo);
 
@@ -153,6 +177,21 @@ const totalToggler = root.querySelector('.toggle-all');
 const filtersList = root.querySelector('.filters');
 const buttonClearCompleted = root.querySelector('.clear-completed');
 
+const initialTodoList = [
+  {
+    id: 1,
+    name: 'Create todo list',
+    isCompleted: true,
+  },
+  {
+    id: 2,
+    name: 'Start adding tasks',
+    isCompleted: false,
+  },
+];
+
+setTodoListFrom(initialTodoList);
+
 root.addEventListener('click', applyCurrentFilter);
 root.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
@@ -185,7 +224,7 @@ root.addEventListener('keypress', (event) => {
 
 todoInput.addEventListener('keypress', (event) => {
   if (event.key === 'Enter') {
-    addTodo();
+    addInputedTodo();
   }
 });
 

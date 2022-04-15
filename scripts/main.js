@@ -1,21 +1,11 @@
 'use strict'
 
-function runOnEnter(event, func) {
-  if (event.key === 'Enter') {
-    func(event);
-  }
-}
-
-function updateItemsLeft() {
-  const total = todoList.querySelectorAll('li').length;
-  const done = todoList.querySelectorAll('.completed').length;
-
-  itemsLeftCounter.textContent = total - done;
-}
-
-function makeTodoFromObj(obj) {
-  return `
-    <li class="todo-item ${obj.isCompleted ? 'completed' : ''}">
+function renderTodoList() {
+  todoList.innerHTML = todoObjects.map(obj => `
+    <li
+      class="todo-item ${obj.isCompleted ? 'completed' : ''}"
+      data-id="${obj.id}"
+    >
       <input
         type="checkbox"
         id="todo-${obj.id}"
@@ -25,20 +15,19 @@ function makeTodoFromObj(obj) {
       <label for="todo-${obj.id}">${obj.name}</label>
       <button class="destroy"></button>
     </li>
-  `;
-}
-
-function setTodoListFrom(objList) {
-  for (const todoObj of objList) {
-    const newTodo = makeTodoFromObj(todoObj);
-
-    todoList.insertAdjacentHTML('beforeend', newTodo);
-  }
+  `).join('');
 
   updateTotalToggler();
   updateClearCompleted();
   updateItemsLeft();
   updateFooter();
+}
+
+function updateItemsLeft() {
+  const total = todoList.querySelectorAll('li').length;
+  const done = todoList.querySelectorAll('.completed').length;
+
+  itemsLeftCounter.textContent = total - done;
 }
 
 function addInputedTodo() {
@@ -48,14 +37,15 @@ function addInputedTodo() {
     return;
   }
 
-  const newTodo = makeTodoFromObj({
+  todoObjects.push({
     id: Number(new Date()) % 100_000,
     name: inputText,
+    isCompleted: false,
   });
 
-  todoList.insertAdjacentHTML('beforeend', newTodo);
-
   todoInput.value = '';
+
+  renderTodoList();
 }
 
 function removeTodo(event) {
@@ -64,31 +54,29 @@ function removeTodo(event) {
   }
 
   const todo = event.target.closest('.todo-item');
+  const todoIndex = todoObjects.getIndexById(todo.dataset.id);
 
-  todo.remove();
-}
+  todoObjects.splice(todoIndex, 1);
 
-function markDoneAs(isDone, todoItem) {
-  if (todoItem.matches('.completed') !== isDone) {
-    todoItem.classList.toggle('completed');
-  }
-
-  todoItem.querySelector('input').checked = isDone;
+  renderTodoList();
 }
 
 function toggleTodo(event) {
-  const todo = event.target.closest('.todo-item');
-  const checkbox = todo.querySelector('.toggle');
+  const todoEl = event.target.closest('.todo-item');
+  const todoIndex = todoObjects.getIndexById(todoEl.dataset.id);
+  const todoObj = todoObjects[todoIndex];
 
-  markDoneAs(checkbox.checked, todo);
+  todoObj.isCompleted = !todoObj.isCompleted;
+
+  renderTodoList();
 }
 
 function toggleAllTodos() {
-  const isAllDone = totalToggler.checked;
+  const isAllCompleted = totalToggler.checked;
   
-  for (const todoItem of todoList.querySelectorAll('.todo-item')) {
-    markDoneAs(isAllDone, todoItem);
-  }
+  todoObjects.forEach(obj => obj.isCompleted = isAllCompleted);
+
+  renderTodoList();
 }
 
 function updateTotalToggler() {
@@ -132,8 +120,16 @@ function showCompletedTodos() {
 }
 
 function clearCompletedTodos() {
-  todoList.querySelectorAll('.completed')
-    .forEach(todo => todo.remove());
+  for (let i = 0; i < todoObjects.length; i++) {
+    const currentObj = todoObjects[i];
+    
+    if (currentObj.isCompleted) {
+      todoObjects.splice(i, 1);
+      i--;
+    }
+  }
+
+  renderTodoList();
 }
 
 function markSelectedFilter(event) {
@@ -177,7 +173,7 @@ const totalToggler = root.querySelector('.toggle-all');
 const filtersList = root.querySelector('.filters');
 const buttonClearCompleted = root.querySelector('.clear-completed');
 
-const initialTodoList = [
+const todoObjects = [
   {
     id: 1,
     name: 'Create todo list',
@@ -190,7 +186,12 @@ const initialTodoList = [
   },
 ];
 
-setTodoListFrom(initialTodoList);
+todoObjects.getIndexById = function getIndexById(id) {
+  return this.indexOf(this
+    .find(({ id: currentId }) => currentId === +id));
+};
+
+renderTodoList();
 
 root.addEventListener('click', applyCurrentFilter);
 root.addEventListener('keypress', (event) => {
@@ -198,29 +199,6 @@ root.addEventListener('keypress', (event) => {
       applyCurrentFilter();
     }
   });
-
-root.addEventListener('click', updateItemsLeft);
-root.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') {
-    updateItemsLeft();
-  }
-});
-
-root.addEventListener('click', updateTotalToggler);
-root.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') {
-    updateTotalToggler();
-  }
-});
-
-root.addEventListener('click', updateClearCompleted);
-
-root.addEventListener('click', updateFooter);
-root.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') {
-    updateFooter();
-  }
-});
 
 todoInput.addEventListener('keypress', (event) => {
   if (event.key === 'Enter') {
